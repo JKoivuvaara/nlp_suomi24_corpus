@@ -170,6 +170,14 @@ def scan_corpus(corpus_path: str, thread_ids: set[bytes], query: str, zf: zipfil
         for thread_id, lemma_counts in corpus_vocab.items()
     }
 
+def query(queries: list):
+    archive = "suomi24-2001-2017-vrt-v1-3.zip"
+    with zipfile.ZipFile(archive, mode="r") as zf:
+        names = zf.namelist()[0:17]  # include 2001-2017, exclude LICENSE.txt and README.txt
+
+    # download all queries
+    for q in queries:
+        save_query(q)
 
 separator = "_QUERY_"
 os.makedirs("scan_tasks", exist_ok=True)
@@ -189,22 +197,12 @@ def scan_task(args):
     print(f"Scan complete: {query}, {path[-12:-4]}")
     # return (query, path, corpus_vocab)
 
-
-if __name__ == "__main__":
-
-    # defining query terms
-    queries = ["deradik", "maltillistu", "polaris", "radik"]
-    # don't use "deradik" for analysis
-
+def scan(queries: list):
+    # set up the queue for each query term+corpus combination
     archive = "suomi24-2001-2017-vrt-v1-3.zip"
     with zipfile.ZipFile(archive, mode="r") as zf:
         names = zf.namelist()[0:17]  # include 2001-2017, exclude LICENSE.txt and README.txt
 
-    # download all queries
-    for q in queries:
-        save_query(q)
-
-    # set up the queue for each query term+corpus combination
     existing = set(os.listdir("scan_tasks"))
 
     scan_list = [
@@ -235,3 +233,13 @@ if __name__ == "__main__":
         vocabularies[q][p] = corpus_vocab
 
     print("Scan complete.")
+    return vocabularies
+
+if __name__ == "__main__":
+    print("archive_reader.py")
+    # defining query terms
+    queries = ["deradik", "maltillistu", "polaris", "radik"]
+    # don't use "deradik" for analysis
+
+    query(queries)
+    scan(queries)

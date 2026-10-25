@@ -236,7 +236,7 @@ def scan(queries: list):
     return vocabularies
 
 if __name__ == "__main__":
-    print("archive_reader.py")
+    print("archive_reader.py main()")
     # defining query terms
     queries = ["deradik", "maltillistu", "polaris", "radik"]
     # don't use "deradik" for analysis

@@ -180,8 +180,8 @@ def query(queries: list, archive_path: str):
 
 separator = "_QUERY_"
 
-def scan_task(args, archive_path: str):
-    query, path = args
+def scan_task(args):
+    query, path, archive_path = args
     thread_ids = get_thread_ids(query)
 
     with zipfile.ZipFile(archive_path, mode="r") as zf:
@@ -202,7 +202,7 @@ def scan(queries: list, archive_path: str):
     existing = set(os.listdir("scan_tasks"))
 
     scan_list = [
-        (query, path)
+        (query, path, archive_path)
         for query, path in product(queries, names)
         if f"{query}{separator}{path.replace('/', '@')}.pkl"
            not in existing

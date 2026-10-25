@@ -80,10 +80,27 @@ def get_query_hits(query: str) -> set[tuple]:
     for comment in kwic:
         thread_id = comment["structs"]["text_thread_id"].encode("utf-8")  # save as bytes for faster parsing later
         corpus = comment["corpus"]
-        threads.add((corpus, thread_id, query))  # include query because multiple queries might be in the same thread
+        threads.add((corpus, thread_id, query))
 
     return threads
 
+def get_unique_titles(query: str) -> dict:
+    """
+    Get all unique titles for each corpus associated with a query
+    :param query: get titles associated with this query term
+    :return: dict[corpus_name]: {title1, title2,...}
+    """
+
+    titles = defaultdict(set)
+    data = get_query(query)
+    kwic = data["kwic"]
+
+    for comment in kwic:
+        title = comment["structs"]["text_title"]
+        corpus = comment["corpus"]
+        titles[corpus].add(title)
+
+    return titles
 
 def get_thread_ids(query: str) -> set[bytes]:
     """
@@ -103,24 +120,38 @@ def get_thread_ids(query: str) -> set[bytes]:
     return thread_ids
 
 
+
+# vocabularies = defaultdict(  # see dict structure above
+#     lambda: defaultdict(
+#         lambda: defaultdict(
+#             lambda: defaultdict(int)
+#         )
+#     )
+# )
 """
 vocabularies = {
     query: {  # query as string
         corpus_name: {  # path as string
-            thread_id: {    # byte
+            thread_id: {    # byte, you have to do this: "123456".encode("utf-8")
                 lemma: count    # byte: int
             }
         }
     }
 }
 """
-vocabularies = defaultdict(  # see dict structure above
-    lambda: defaultdict(
-        lambda: defaultdict(
-            lambda: defaultdict(int)
-        )
-    )
-)
+def lemma_count():
+    return defaultdict(int)
+
+def thread_level():
+    return defaultdict(lemma_count)
+
+def corpus_level():
+    return defaultdict(thread_level)
+
+def query_level():
+    return defaultdict(corpus_level)
+
+vocabularies = defaultdict(query_level)  # see dict structure above
 
 
 def scan_corpus(corpus_path: str, thread_ids: set[bytes], query: str, zf: zipfile.ZipFile):
@@ -192,7 +223,6 @@ def scan_task(args):
         pickle.dump(corpus_vocab, f)
 
     print(f"Scan complete: {query}, {path[-12:-4]}")
-    # return (query, path, corpus_vocab)
 
 def scan(queries: list, archive_path: str):
     # set up the queue for each query term+corpus combination
@@ -209,15 +239,9 @@ def scan(queries: list, archive_path: str):
     ]
 
     print(f"Running scan {len(scan_list)} times. This will take around (6-10 min X {len(scan_list)}) / core_count on an SSD. To rerun the same task, delete the .pkl files in scan_tasks/.")
-    # print(scan_list)
-    total = len(scan_list)
 
     with ProcessPoolExecutor(max_workers=os.cpu_count()) as executor:
         list(executor.map(scan_task, scan_list))
-        # for query, path, corpus_vocab in executor.map(scan_task, scan_list):
-        #     pass
-        # vocabularies[query][path] = corpus_vocab
-        # print(f"Completed scan {i}/{total}: {query} {path[-12:-4]}")
 
     for file_name in os.listdir("scan_tasks"):
         q, p = file_name.split(separator, 1)
@@ -229,10 +253,12 @@ def scan(queries: list, archive_path: str):
         vocabularies[q][p] = corpus_vocab
 
     print("Scan complete.")
+
     return vocabularies
 
 if __name__ == "__main__":
     print("archive_reader.py main()")
+
     # defining query terms
     queries = ["deradik", "maltillistu", "polaris", "radik"]
     # don't use "deradik" for analysis

@@ -10,7 +10,7 @@ from concurrent.futures import ProcessPoolExecutor
 from collections import defaultdict
 
 os.makedirs("queries", exist_ok=True)
-
+os.makedirs("scan_tasks", exist_ok=True)
 
 def save_query(query: str):
     """Query kielipankki.fi and save the results to a json file: queries/[query].json"""
@@ -170,9 +170,8 @@ def scan_corpus(corpus_path: str, thread_ids: set[bytes], query: str, zf: zipfil
         for thread_id, lemma_counts in corpus_vocab.items()
     }
 
-def query(queries: list):
-    archive = "suomi24-2001-2017-vrt-v1-3.zip"
-    with zipfile.ZipFile(archive, mode="r") as zf:
+def query(queries: list, archive_path: str):
+    with zipfile.ZipFile(archive_path, mode="r") as zf:
         names = zf.namelist()[0:17]  # include 2001-2017, exclude LICENSE.txt and README.txt
 
     # download all queries
@@ -180,14 +179,12 @@ def query(queries: list):
         save_query(q)
 
 separator = "_QUERY_"
-os.makedirs("scan_tasks", exist_ok=True)
 
-def scan_task(args):
+def scan_task(args, archive_path: str):
     query, path = args
     thread_ids = get_thread_ids(query)
 
-    archive = "suomi24-2001-2017-vrt-v1-3.zip"
-    with zipfile.ZipFile(archive, mode="r") as zf:
+    with zipfile.ZipFile(archive_path, mode="r") as zf:
         corpus_vocab = scan_corpus(path, thread_ids, query, zf)
 
     # save results
@@ -197,10 +194,9 @@ def scan_task(args):
     print(f"Scan complete: {query}, {path[-12:-4]}")
     # return (query, path, corpus_vocab)
 
-def scan(queries: list):
+def scan(queries: list, archive_path: str):
     # set up the queue for each query term+corpus combination
-    archive = "suomi24-2001-2017-vrt-v1-3.zip"
-    with zipfile.ZipFile(archive, mode="r") as zf:
+    with zipfile.ZipFile(archive_path, mode="r") as zf:
         names = zf.namelist()[0:17]  # include 2001-2017, exclude LICENSE.txt and README.txt
 
     existing = set(os.listdir("scan_tasks"))
@@ -240,6 +236,7 @@ if __name__ == "__main__":
     # defining query terms
     queries = ["deradik", "maltillistu", "polaris", "radik"]
     # don't use "deradik" for analysis
+    archive = "suomi24-2001-2017-vrt-v1-3.zip"
 
-    query(queries)
-    scan(queries)
+    query(queries, archive)
+    scan(queries, archive)

@@ -245,6 +245,9 @@ def scan(queries: list, archive_path: str):
 
     for file_name in os.listdir("scan_tasks"):
         q, p = file_name.split(separator, 1)
+        if q not in queries:    # exclude irrelevant queries
+            continue
+
         p = p.removesuffix(".pkl").replace('@', '/')
 
         with open(f"scan_tasks/{file_name}", "rb") as f:

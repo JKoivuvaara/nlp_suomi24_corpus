@@ -133,41 +133,6 @@ def get_thread_ids(query: str, queries_dir: str) -> set[bytes]:
 
     return thread_ids
 
-
-
-# vocabularies = defaultdict(  # see dict structure above
-#     lambda: defaultdict(
-#         lambda: defaultdict(
-#             lambda: defaultdict(int)
-#         )
-#     )
-# )
-"""
-vocabularies = {
-    query: {  # query as string
-        corpus_name: {  # path as string
-            thread_id: {    # byte, you have to do this: "123456".encode("utf-8")
-                lemma: count    # byte: int
-            }
-        }
-    }
-}
-"""
-def lemma_count():
-    return defaultdict(int)
-
-def thread_level():
-    return defaultdict(lemma_count)
-
-def corpus_level():
-    return defaultdict(thread_level)
-
-def query_level():
-    return defaultdict(corpus_level)
-
-vocabularies = defaultdict(query_level)  # see dict structure above
-
-
 def scan_corpus(corpus_path: str, thread_ids: set[bytes], zf: zipfile.ZipFile):
     regex_thread_id = re.compile(rb'thread_id="([^"]+)"')
     text_open = b'<text'
@@ -395,7 +360,32 @@ def scan_task(args):
 
     print(f"{time.strftime('%H:%M', time.localtime())}: Scan complete: {query}, {path[-12:-4]}")
 
+# vocabularies = defaultdict(  # see dict structure above
+#     lambda: defaultdict(
+#         lambda: defaultdict(
+#             lambda: defaultdict(int)
+#         )
+#     )
+# )
+"""
+vocabularies = {
+    query: {  # query as string
+        corpus_name: {  # path as string
+            thread_id: {    # byte, you have to do this: "123456".encode("utf-8")
+                lemma: count    # byte: int
+            }
+        }
+    }
+}
+"""
+
 def scan(queries: list, queries_dir: str, archive_path: str):
+    def lemma_count(): return defaultdict(int)
+    def thread_level(): return defaultdict(lemma_count)
+    def corpus_level(): return defaultdict(thread_level)
+    def query_level(): return defaultdict(corpus_level)
+    vocabularies = defaultdict(query_level)  # see dict structure above function definition
+
     print(f"{time.strftime('%H:%M', time.localtime())}: Starting Suomi24-corpus scan.")
     # set up the queue for each query term+corpus combination
     with zipfile.ZipFile(archive_path, mode="r") as zf:

@@ -100,7 +100,7 @@ def get_query_hits(query: str, queries_path: str) -> set[tuple]:
     return threads
 
 
-def get_query_hit_counts(query: str, queries_path: str) -> dict[str, int]:
+def get_query_comment_counts(query: str, queries_path: str) -> dict[str, int]:
     data = get_query(query, queries_path)
 
     corpus_counts = Counter()

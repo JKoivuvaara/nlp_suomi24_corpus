@@ -8,6 +8,7 @@ import zipfile
 import os
 import pickle
 import time
+from collections import Counter
 from itertools import product
 from json import JSONDecodeError
 from concurrent.futures import ProcessPoolExecutor
@@ -97,6 +98,17 @@ def get_query_hits(query: str, queries_path: str) -> set[tuple]:
         threads.add((corpus, thread_id, query))
 
     return threads
+
+
+def get_query_hit_counts(query: str, queries_path: str) -> dict[str, int]:
+    data = get_query(query, queries_path)
+
+    corpus_counts = Counter()
+
+    for comment in data["kwic"]:
+        corpus_counts[comment["corpus"]] += 1
+
+    return dict(corpus_counts)
 
 def get_unique_titles(query: str, queries_path: str) -> dict:
     """

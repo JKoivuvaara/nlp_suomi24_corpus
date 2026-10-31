@@ -192,10 +192,8 @@ def scan_corpus(corpus_path: str, thread_ids: set[bytes], zf: zipfile.ZipFile):
         for thread_id, lemma_counts in corpus_vocab.items()
     }
 
-def query(queries: list, archive_path: str):
+def query(queries: list):
     print(f"{time.strftime('%H:%M', time.localtime())}: Looking for queries.")
-    with zipfile.ZipFile(archive_path, mode="r") as zf:
-        names = zf.namelist()[0:17]  # include 2001-2017, exclude LICENSE.txt and README.txt
 
     # download all queries
     for q in queries:

@@ -27,6 +27,6 @@ All the analysis was done in jupyter notebooks:
 - Queries and building vocabulary, Heaps' Law
 - Specifications 1,2,3,4,5,6
 
-2. [add name here].ipynb
+2. suomi24_sentiment_analysis.ipynb
 
 - Specifications 7,8,9,10

@@ -16,7 +16,7 @@ Run:
 3. Save the zip file in this directory (or somwehere else, but you may have to change a couple lines of code).
 
 4. Alternatively if you dont want to do the above steps, as running the queries and scans can take a long time, you can download the intermediary 
-results from [ ], unzip them, and place the folders inside this directory.
+results from [link in report], unzip them, and move the 4 folders inside this directory.
 
 ## Running the project
 

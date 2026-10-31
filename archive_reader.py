@@ -389,7 +389,7 @@ vocabularies = {
 }
 """
 
-def scan(queries: list, queries_dir: str, archive_path: str):
+def scan(queries: list, queries_dir: str, archive_path: str, archive_names: list = None):
     def lemma_count(): return defaultdict(int)
     def thread_level(): return defaultdict(lemma_count)
     def corpus_level(): return defaultdict(thread_level)
@@ -397,9 +397,13 @@ def scan(queries: list, queries_dir: str, archive_path: str):
     vocabularies = defaultdict(query_level)  # see dict structure above function definition
 
     print(f"{time.strftime('%H:%M', time.localtime())}: Starting Suomi24-corpus scan.")
+
     # set up the queue for each query term+corpus combination
-    with zipfile.ZipFile(archive_path, mode="r") as zf:
-        archive_names = zf.namelist()[0:17]  # include 2001-2017, exclude LICENSE.txt and README.txt
+
+    # load archive names from zip files if a list was not already supplied
+    if not archive_names:
+        with zipfile.ZipFile(archive_path, mode="r") as zf:
+            archive_names = zf.namelist()[0:17]  # include 2001-2017, exclude LICENSE.txt and README.txt
 
     existing = set(os.listdir("scan_tasks"))
 
